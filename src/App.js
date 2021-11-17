@@ -7,23 +7,70 @@ function App() {
   const [tasks, settasks] = useState([]);
   const [toggleAddForm, setToggleAddForm] = useState(false);
 
+  useEffect (() => {
+    const getTasks = async () => {
+      const tasksFromServer = await fetchTasks()
+      settasks(tasksFromServer)
+    }
+    getTasks()
+  }, [])
+
+  //Fetch tasks
+  const fetchTasks = async () => {
+    const res = await fetch('http://localhost:5000/tasks')
+    const data = await res.json();
+    return data;
+  }
+
+  //Fetch task
+  const fetchTask = async (id) => {
+    const res = await fetch(`http://localhost:5000/tasks/${id}`)
+    const data = await res.json();
+    return data;
+  }
+
   //Add task
-  const addTask = (task) => {
-    const id = Math.floor(Math.random() * 10000 + 1);
-    const newTask = { id, ...task };
-    settasks([...tasks, newTask]);
+  const addTask = async (task) => {
+    const res = await fetch('http://localhost:5000/tasks', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(task)
+      
+    })
+    const data = await res.json()
+    settasks([...tasks, data]);
   };
 
   // Delete a task
-  const DeleteTask = (id) => {
+  const DeleteTask = async (id) => {
+    await fetch(`http://localhost:5000/tasks/${id}`, {
+      method: 'DELETE'
+    })
+
     settasks(tasks.filter((task) => task.id !== id));
   };
 
   //Toggle completed
-  const ToggleCompleted = (id) => {
+  const ToggleCompleted = async (id) => {
+    const taskToToggle = await fetchTask(id);
+    console.log(taskToToggle)
+    const updTask = {...taskToToggle, completed : !taskToToggle.completed}
+
+    const requestOptions = {
+      method: 'PUT',
+      headers: {'Content-type': 'application/json'},
+      body: JSON.stringify(updTask)
+    }
+
+    const res = await fetch(`http://localhost:5000/tasks/${id}`, requestOptions)
+    const data = await res.json();
+    console.log(data);
+
     settasks(
       tasks.map((task) =>
-        task.id === id ? { ...task, completed: !task.completed } : task
+        task.id === id ? { ...task, completed: data.completed } : task
       )
     );
   };
