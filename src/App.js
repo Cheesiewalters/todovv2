@@ -60,7 +60,8 @@ function App() {
 
     const requestOptions = {
       method: 'PUT',
-      headers: {'Content-type': 'application/json'},
+      headers
+      : {'Content-type': 'application/json'},
       body: JSON.stringify(updTask)
     }
 
